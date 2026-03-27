@@ -44,7 +44,6 @@
     overflow-x: hidden;
   }
 
-  /* grid background */
   body::before {
     content: '';
     position: fixed;
@@ -64,7 +63,6 @@
     max-width: 640px;
   }
 
-  /* ── Header ── */
   header {
     margin-bottom: 3rem;
     animation: fadeDown 0.6s ease both;
@@ -100,7 +98,6 @@
     font-weight: 400;
   }
 
-  /* ── Input card ── */
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -153,7 +150,6 @@
   button:active { transform: scale(0.97); }
   button:disabled { opacity: 0.4; cursor: not-allowed; }
 
-  /* ── Loader ── */
   .loader {
     display: none;
     align-items: center;
@@ -173,7 +169,6 @@
     animation: spin 0.7s linear infinite;
   }
 
-  /* ── Result ── */
   #result {
     margin-top: 1.5rem;
     display: none;
@@ -291,7 +286,24 @@
     color: var(--danger);
   }
 
-  /* ── Animations ── */
+  .trust {
+    margin-top: 1rem;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    opacity: 0.8;
+  }
+
+  .trust a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .trust a:hover {
+    text-decoration: underline;
+  }
+
   @keyframes fadeDown {
     from { opacity: 0; transform: translateY(-16px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -311,7 +323,7 @@
   <header>
     <div class="logo">// security tool</div>
     <h1>Subdom<span>Checker</span></h1>
-    <p class="subtitle">detect subdomain takeover vulnerabilities</p>
+    <p class="subtitle">Find vulnerable subdomains in seconds</p>
   </header>
 
   <div class="card">
@@ -319,7 +331,7 @@
       <input
         type="text"
         id="subdomainInput"
-        placeholder="shop.example.com"
+        placeholder="Enter subdomain (e.g. dev.example.com)"
         autocomplete="off"
         spellcheck="false"
       />
@@ -329,6 +341,11 @@
     <div class="loader" id="loader">
       <div class="spinner"></div>
       <span id="loaderText">Resolving CNAME chain...</span>
+    </div>
+
+    <div class="trust">
+      No data stored • DNS checks only • No logging<br>
+      <a href="https://github.com/mikaww1/SubdomChecker" target="_blank">View source on GitHub</a>
     </div>
   </div>
 
@@ -343,7 +360,6 @@
   const loaderText = document.getElementById("loaderText");
   const resultEl = document.getElementById("result");
 
-  // Allow Enter key
   input.addEventListener("keydown", e => { if (e.key === "Enter") runCheck(); });
 
   const loaderMessages = [
@@ -357,13 +373,11 @@
     const subdomain = input.value.trim();
     if (!subdomain) { input.focus(); return; }
 
-    // UI: loading state
     btn.disabled = true;
     resultEl.classList.remove("visible");
     resultEl.innerHTML = "";
     loader.classList.add("visible");
 
-    // Cycle through loader messages
     let msgIdx = 0;
     loaderText.textContent = loaderMessages[0];
     const msgInterval = setInterval(() => {
@@ -393,8 +407,8 @@
   function renderResult(d) {
     if (d.error) { renderError(d.error); return; }
 
-    const isVuln    = d.vulnerable;
-    const conf      = d.confidence;
+    const isVuln = d.vulnerable;
+    const conf   = d.confidence;
 
     let headerClass, badgeClass, badgeText, headerIcon, headerLabel;
 
@@ -417,10 +431,8 @@
     }
 
     let rows = "";
-
     rows += row("Subdomain", d.subdomain);
-    rows += row("Reason",    d.reason);
-
+    rows += row("Details", d.reason);
     if (d.service)
       rows += row("Service", d.service);
 
