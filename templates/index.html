@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SubdomChecker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0a0c0f;
+    --surface:   #0f1318;
+    --border:    #1e2530;
+    --accent:    #00ff88;
+    --accent2:   #00c8ff;
+    --danger:    #ff3c5a;
+    --muted:     #4a5568;
+    --text:      #e2e8f0;
+    --text-dim:  #718096;
+    --mono:      'Share Tech Mono', monospace;
+    --sans:      'Syne', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    overflow-x: hidden;
+  }
+
+  /* grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 640px;
+  }
+
+  /* ── Header ── */
+  header {
+    margin-bottom: 3rem;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .logo {
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-family: var(--mono);
+    margin-bottom: 0.75rem;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  h1 span {
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .subtitle {
+    margin-top: 0.75rem;
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    font-family: var(--mono);
+    font-weight: 400;
+  }
+
+  /* ── Input card ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.75rem;
+    animation: fadeUp 0.6s ease 0.1s both;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  input[type="text"] {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    padding: 0.75rem 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input[type="text"]::placeholder { color: var(--muted); }
+
+  input[type="text"]:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,255,136,0.08);
+  }
+
+  button {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+    padding: 0.75rem 1.4rem;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    white-space: nowrap;
+  }
+
+  button:hover  { opacity: 0.88; }
+  button:active { transform: scale(0.97); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── Loader ── */
+  .loader {
+    display: none;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 1.25rem;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+  .loader.visible { display: flex; }
+
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  /* ── Result ── */
+  #result {
+    margin-top: 1.5rem;
+    display: none;
+    animation: fadeUp 0.4s ease both;
+  }
+  #result.visible { display: block; }
+
+  .result-card {
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .result-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.02em;
+  }
+
+  .result-header.vulnerable {
+    background: rgba(255,60,90,0.12);
+    border-bottom: 1px solid rgba(255,60,90,0.3);
+    color: var(--danger);
+  }
+
+  .result-header.safe {
+    background: rgba(0,255,136,0.08);
+    border-bottom: 1px solid rgba(0,255,136,0.2);
+    color: var(--accent);
+  }
+
+  .result-header.unknown {
+    background: rgba(255,200,0,0.08);
+    border-bottom: 1px solid rgba(255,200,0,0.2);
+    color: #ffc800;
+  }
+
+  .badge {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    margin-left: auto;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .badge.vuln  { background: rgba(255,60,90,0.2);  color: var(--danger); }
+  .badge.safe  { background: rgba(0,255,136,0.15); color: var(--accent); }
+  .badge.unk   { background: rgba(255,200,0,0.15); color: #ffc800; }
+
+  .result-body {
+    padding: 1.25rem;
+    background: var(--surface);
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .row {
+    display: flex;
+    gap: 0.75rem;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+
+  .row-label {
+    color: var(--text-dim);
+    min-width: 110px;
+    flex-shrink: 0;
+  }
+
+  .row-value { color: var(--text); word-break: break-all; }
+
+  .cname-chain {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    align-items: center;
+  }
+
+  .cname-item {
+    background: rgba(0,200,255,0.08);
+    border: 1px solid rgba(0,200,255,0.15);
+    border-radius: 4px;
+    padding: 0.1rem 0.4rem;
+    font-size: 0.78rem;
+    color: var(--accent2);
+  }
+
+  .arrow { color: var(--muted); font-size: 0.75rem; }
+
+  .wildcard-warn {
+    margin-top: 0.75rem;
+    padding: 0.6rem 0.85rem;
+    background: rgba(255,200,0,0.06);
+    border: 1px solid rgba(255,200,0,0.2);
+    border-radius: 6px;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: #ffc800;
+  }
+
+  .error-msg {
+    padding: 1rem 1.25rem;
+    background: rgba(255,60,90,0.08);
+    border: 1px solid rgba(255,60,90,0.25);
+    border-radius: 10px;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--danger);
+  }
+  .trust {
+  margin-top: 1rem;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  opacity: 0.8;
+  }
+  .trust a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.trust a:hover {
+  text-decoration: underline;
+}
+
+  /* ── Animations ── */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <header>
+    <div class="logo">// security tool</div>
+    <h1>Subdom<span>Checker</span></h1>
+    <p class="subtitle">Find vulnerable subdomains in seconds</p>
+  </header>
+
+  <div class="card">
+    <div class="input-row">
+      <input
+        type="text"
+        id="subdomainInput"
+        placeholder="Enter subdomain (e.g. dev.example.com)"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button id="checkBtn" onclick="runCheck()">Check</button>
+    </div>
+
+    <div class="loader" id="loader">
+
+      <div class="spinner"></div>
+      <span id="loaderText">Resolving CNAME chain...</span>
+    </div>
+      <div class="trust">
+  No data stored • DNS checks only • No logging<br>
+  <a href="#" target="_blank">View source on GitHub</a>
+</div>
+  </div>
+
+  <div id="result"></div>
+
+</div>
+
+<script>
+  const input   = document.getElementById("subdomainInput");
+  const btn     = document.getElementById("checkBtn");
+  const loader  = document.getElementById("loader");
+  const loaderText = document.getElementById("loaderText");
+  const resultEl = document.getElementById("result");
+
+  // Allow Enter key
+  input.addEventListener("keydown", e => { if (e.key === "Enter") runCheck(); });
+
+  const loaderMessages = [
+    "Resolving CNAME chain...",
+    "Checking wildcard DNS...",
+    "Matching service fingerprints...",
+    "Fetching response...",
+  ];
+
+  async function runCheck() {
+    const subdomain = input.value.trim();
+    if (!subdomain) { input.focus(); return; }
+
+    // UI: loading state
+    btn.disabled = true;
+    resultEl.classList.remove("visible");
+    resultEl.innerHTML = "";
+    loader.classList.add("visible");
+
+    // Cycle through loader messages
+    let msgIdx = 0;
+    loaderText.textContent = loaderMessages[0];
+    const msgInterval = setInterval(() => {
+      msgIdx = (msgIdx + 1) % loaderMessages.length;
+      loaderText.textContent = loaderMessages[msgIdx];
+    }, 1800);
+
+    try {
+      const res  = await fetch("/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subdomain }),
+      });
+      const data = await res.json();
+      clearInterval(msgInterval);
+      loader.classList.remove("visible");
+      renderResult(data);
+    } catch (err) {
+      clearInterval(msgInterval);
+      loader.classList.remove("visible");
+      renderError("Could not reach the server. Is the API running?");
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function renderResult(d) {
+    if (d.error) { renderError(d.error); return; }
+
+    const isVuln    = d.vulnerable;
+    const conf      = d.confidence;
+
+    let headerClass, badgeClass, badgeText, headerIcon, headerLabel;
+
+    if (isVuln) {
+      headerClass = "vulnerable"; badgeClass = "vuln";
+      badgeText = "VULNERABLE"; headerIcon = "⚠";
+      headerLabel = "Subdomain takeover possible";
+    } else if (conf === "unknown") {
+      headerClass = "unknown"; badgeClass = "unk";
+      badgeText = "UNKNOWN"; headerIcon = "?";
+      headerLabel = "Manual review recommended";
+    } else if (conf === "n/a") {
+      headerClass = "safe"; badgeClass = "safe";
+      badgeText = "N/A"; headerIcon = "–";
+      headerLabel = "No external service found";
+    } else {
+      headerClass = "safe"; badgeClass = "safe";
+      badgeText = "SAFE"; headerIcon = "✓";
+      headerLabel = "No takeover detected";
+    }
+
+    let rows = "";
+
+    rows += row("Subdomain", d.subdomain);
+    rows += row("Details", d.reason);
+    if (d.service)
+      rows += row("Service", d.service);
+
+    if (d.cname_chain && d.cname_chain.length) {
+      const chain = [d.subdomain, ...d.cname_chain]
+        .map((c, i, arr) =>
+          `<span class="cname-item">${c}</span>${i < arr.length - 1 ? '<span class="arrow">→</span>' : ''}`
+        ).join(" ");
+      rows += `<div class="row"><span class="row-label">CNAME chain</span><span class="row-value"><div class="cname-chain">${chain}</div></span></div>`;
+    }
+
+    if (d.http_status)
+      rows += row("HTTP status", d.http_status);
+
+    const wildcard = d.wildcard_detected
+      ? `<div class="wildcard-warn">⚠ Wildcard DNS detected on parent domain — results may be unreliable</div>`
+      : "";
+
+    resultEl.innerHTML = `
+      <div class="result-card">
+        <div class="result-header ${headerClass}">
+          <span>${headerIcon}</span>
+          <span>${headerLabel}</span>
+          <span class="badge ${badgeClass}">${badgeText}</span>
+        </div>
+        <div class="result-body">
+          ${rows}
+          ${wildcard}
+        </div>
+      </div>`;
+
+    resultEl.classList.add("visible");
+  }
+
+  function row(label, value) {
+    return `<div class="row"><span class="row-label">${label}</span><span class="row-value">${value}</span></div>`;
+  }
+
+  function renderError(msg) {
+    resultEl.innerHTML = `<div class="error-msg">✗ ${msg}</div>`;
+    resultEl.classList.add("visible");
+  }
+</script>
+</body>
+</html>
