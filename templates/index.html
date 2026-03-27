@@ -4,6 +4,14 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>SubdomChecker</title>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-KGVDT8TEYH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-KGVDT8TEYH');
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
@@ -282,22 +290,6 @@
     font-size: 0.85rem;
     color: var(--danger);
   }
-  .trust {
-  margin-top: 1rem;
-  text-align: center;
-  font-family: var(--mono);
-  font-size: 0.75rem;
-  color: var(--text-dim);
-  opacity: 0.8;
-  }
-  .trust a {
-  color: var(--accent);
-  text-decoration: none;
-}
-
-.trust a:hover {
-  text-decoration: underline;
-}
 
   /* ── Animations ── */
   @keyframes fadeDown {
@@ -319,7 +311,7 @@
   <header>
     <div class="logo">// security tool</div>
     <h1>Subdom<span>Checker</span></h1>
-    <p class="subtitle">Find vulnerable subdomains in seconds</p>
+    <p class="subtitle">detect subdomain takeover vulnerabilities</p>
   </header>
 
   <div class="card">
@@ -327,7 +319,7 @@
       <input
         type="text"
         id="subdomainInput"
-        placeholder="Enter subdomain (e.g. dev.example.com)"
+        placeholder="shop.example.com"
         autocomplete="off"
         spellcheck="false"
       />
@@ -335,14 +327,9 @@
     </div>
 
     <div class="loader" id="loader">
-
       <div class="spinner"></div>
       <span id="loaderText">Resolving CNAME chain...</span>
     </div>
-      <div class="trust">
-  No data stored • DNS checks only • No logging<br>
-  <a href="https://github.com/mikaww1/SubdomChecker" target="_blank">View source on GitHub</a>
-</div>
   </div>
 
   <div id="result"></div>
@@ -432,7 +419,8 @@
     let rows = "";
 
     rows += row("Subdomain", d.subdomain);
-    rows += row("Details", d.reason);
+    rows += row("Reason",    d.reason);
+
     if (d.service)
       rows += row("Service", d.service);
 
