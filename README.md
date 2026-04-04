@@ -24,7 +24,7 @@ GitHub Pages, Heroku, AWS S3, Fastly, Netlify, Vercel, Cloudflare Pages, Azure, 
 ## Usage
 
 ### Web
-Visit the live tool at [subdomchecker.up.railway.app](https://web-production-2d68c.up.railway.app/) and enter a subdomain.
+Visit the live tool at [subdomainchecker.com](https://subdomainchecker.com) and enter a subdomain.
 
 ### CLI
 
