@@ -5,14 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="description" content="Free subdomain takeover checker. Detect vulnerable subdomains by following CNAME chains and fingerprinting 40+ services including Heroku, Vercel, AWS S3, Shopify and more.">
 <meta name="keywords" content="subdomain takeover, subdomain checker, CNAME takeover, bug bounty tools, subdomain vulnerability">
-
-<!-- Open Graph (for link previews on Twitter/Reddit) -->
-<meta property="og:title" content="SubdomChecker - Subdomain Takeover Detector">
+<meta property="og:title" content="SubdomainChecker - Subdomain Takeover Detector">
 <meta property="og:description" content="Detect subdomain takeover vulnerabilities for free. Follows full CNAME chains, fingerprints 40+ services.">
 <meta property="og:url" content="https://subdomainchecker.com">
 <meta property="og:type" content="website">
 <title>Subdomain Takeover Checker</title>
-<!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-KGVDT8TEYH"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -24,17 +21,18 @@
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:        #0a0c0f;
-    --surface:   #0f1318;
-    --border:    #1e2530;
-    --accent:    #00ff88;
-    --accent2:   #00c8ff;
-    --danger:    #ff3c5a;
-    --muted:     #4a5568;
-    --text:      #e2e8f0;
-    --text-dim:  #718096;
-    --mono:      'Share Tech Mono', monospace;
-    --sans:      'Syne', sans-serif;
+    --bg:       #0a0c0f;
+    --surface:  #0f1318;
+    --border:   #1e2530;
+    --accent:   #00ff88;
+    --accent2:  #00c8ff;
+    --danger:   #ff3c5a;
+    --warn:     #ffc800;
+    --muted:    #4a5568;
+    --text:     #e2e8f0;
+    --text-dim: #718096;
+    --mono:     'Share Tech Mono', monospace;
+    --sans:     'Syne', sans-serif;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -72,7 +70,7 @@
   }
 
   header {
-    margin-bottom: 1.5rem; /* was 3rem */
+    margin-bottom: 1.5rem;
     animation: fadeDown 0.6s ease both;
   }
 
@@ -82,11 +80,11 @@
     text-transform: uppercase;
     color: var(--accent);
     font-family: var(--mono);
-    margin-bottom: 0.5rem; /* was 0.75rem */
+    margin-bottom: 0.5rem;
   }
 
   h1 {
-    font-size: 1.75rem; /* was clamp(2rem, 6vw, 3.2rem) */
+    font-size: 1.75rem;
     font-weight: 800;
     line-height: 1.1;
     letter-spacing: -0.02em;
@@ -101,23 +99,51 @@
 
   .subtitle {
     color: var(--text-dim);
-    font-size: 0.82rem; /* was 0.95rem */
+    font-size: 0.82rem;
     font-family: var(--mono);
-    font-weight: 400;
   }
 
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 1.25rem; /* was 1.75rem */
+    padding: 1.25rem;
     animation: fadeUp 0.6s ease 0.1s both;
   }
 
+  /* ── Mode toggle ── */
+  .mode-toggle {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .mode-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 0.3rem 0.7rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.05em;
+  }
+
+  .mode-btn:hover { border-color: var(--accent); color: var(--accent); opacity: 1; }
+  .mode-btn:active { transform: scale(0.97); }
+  .mode-btn.active {
+    background: rgba(0,255,136,0.1);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ── Single input ── */
   .input-row {
     display: flex;
     gap: 0.75rem;
-    margin-bottom: 0.85rem; /* was handled by trust margin */
+    margin-bottom: 0.85rem;
   }
 
   input[type="text"] {
@@ -128,19 +154,63 @@
     color: var(--text);
     font-family: var(--mono);
     font-size: 0.9rem;
-    padding: 0.65rem 1rem; /* was 0.75rem */
+    padding: 0.65rem 1rem;
     outline: none;
     transition: border-color 0.2s;
   }
 
   input[type="text"]::placeholder { color: var(--muted); }
-
   input[type="text"]:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(0,255,136,0.08);
   }
 
-  button {
+  /* ── Bulk textarea ── */
+  .bulk-wrap {
+    display: none;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 0.85rem;
+  }
+  .bulk-wrap.visible { display: flex; }
+
+  textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    padding: 0.75rem 1rem;
+    outline: none;
+    resize: vertical;
+    min-height: 120px;
+    transition: border-color 0.2s;
+    line-height: 1.6;
+  }
+
+  textarea::placeholder { color: var(--muted); }
+  textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,255,136,0.08);
+  }
+
+  .bulk-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .bulk-count {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    margin-left: auto;
+  }
+
+  /* ── Shared button ── */
+  button.primary {
     background: var(--accent);
     color: #000;
     border: none;
@@ -149,16 +219,17 @@
     font-weight: 700;
     font-size: 0.9rem;
     letter-spacing: 0.05em;
-    padding: 0.65rem 1.4rem; /* was 0.75rem */
+    padding: 0.65rem 1.4rem;
     cursor: pointer;
     transition: opacity 0.2s, transform 0.1s;
     white-space: nowrap;
   }
 
-  button:hover  { opacity: 0.88; }
-  button:active { transform: scale(0.97); }
-  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.primary:hover  { opacity: 0.88; }
+  button.primary:active { transform: scale(0.97); }
+  button.primary:disabled { opacity: 0.4; cursor: not-allowed; }
 
+  /* ── Loader ── */
   .loader {
     display: none;
     align-items: center;
@@ -176,15 +247,30 @@
     border-top-color: var(--accent);
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
   }
 
+  /* ── Trust line ── */
+  .trust {
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    opacity: 0.8;
+  }
+
+  .trust a { color: var(--accent); text-decoration: none; }
+  .trust a:hover { text-decoration: underline; }
+
+  /* ── Result area ── */
   #result {
-    margin-top: 1rem; /* was 1.5rem */
+    margin-top: 1rem;
     display: none;
     animation: fadeUp 0.4s ease both;
   }
   #result.visible { display: block; }
 
+  /* Single result card */
   .result-card {
     border-radius: 10px;
     border: 1px solid var(--border);
@@ -195,33 +281,19 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.85rem 1.1rem; /* was 1rem 1.25rem */
+    padding: 0.85rem 1.1rem;
     font-weight: 700;
     font-size: 0.9rem;
     letter-spacing: 0.02em;
   }
 
-  .result-header.vulnerable {
-    background: rgba(255,60,90,0.12);
-    border-bottom: 1px solid rgba(255,60,90,0.3);
-    color: var(--danger);
-  }
-
-  .result-header.safe {
-    background: rgba(0,255,136,0.08);
-    border-bottom: 1px solid rgba(0,255,136,0.2);
-    color: var(--accent);
-  }
-
-  .result-header.unknown {
-    background: rgba(255,200,0,0.08);
-    border-bottom: 1px solid rgba(255,200,0,0.2);
-    color: #ffc800;
-  }
+  .result-header.vulnerable { background: rgba(255,60,90,0.12);  border-bottom: 1px solid rgba(255,60,90,0.3);  color: var(--danger); }
+  .result-header.safe       { background: rgba(0,255,136,0.08);  border-bottom: 1px solid rgba(0,255,136,0.2); color: var(--accent); }
+  .result-header.unknown    { background: rgba(255,200,0,0.08);  border-bottom: 1px solid rgba(255,200,0,0.2); color: var(--warn); }
 
   .badge {
     font-family: var(--mono);
-    font-size: 0.65rem; /* was 0.7rem */
+    font-size: 0.65rem;
     padding: 0.15rem 0.45rem;
     border-radius: 4px;
     margin-left: auto;
@@ -229,46 +301,36 @@
     text-transform: uppercase;
   }
 
-  .badge.vuln  { background: rgba(255,60,90,0.2);  color: var(--danger); }
-  .badge.safe  { background: rgba(0,255,136,0.15); color: var(--accent); }
-  .badge.unk   { background: rgba(255,200,0,0.15); color: #ffc800; }
+  .badge.vuln { background: rgba(255,60,90,0.2);  color: var(--danger); }
+  .badge.safe { background: rgba(0,255,136,0.15); color: var(--accent); }
+  .badge.unk  { background: rgba(255,200,0,0.15); color: var(--warn); }
 
   .result-body {
-    padding: 1rem 1.1rem; /* was 1.25rem */
+    padding: 1rem 1.1rem;
     background: var(--surface);
     display: grid;
-    gap: 0.5rem; /* was 0.6rem */
+    gap: 0.5rem;
   }
 
   .row {
     display: flex;
     gap: 0.75rem;
     font-family: var(--mono);
-    font-size: 0.78rem; /* was 0.82rem */
+    font-size: 0.78rem;
     line-height: 1.5;
   }
 
-  .row-label {
-    color: var(--text-dim);
-    min-width: 100px; /* was 110px */
-    flex-shrink: 0;
-  }
-
+  .row-label { color: var(--text-dim); min-width: 100px; flex-shrink: 0; }
   .row-value { color: var(--text); word-break: break-all; }
 
-  .cname-chain {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.3rem;
-    align-items: center;
-  }
+  .cname-chain { display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center; }
 
   .cname-item {
     background: rgba(0,200,255,0.08);
     border: 1px solid rgba(0,200,255,0.15);
     border-radius: 4px;
     padding: 0.1rem 0.35rem;
-    font-size: 0.73rem; /* was 0.78rem */
+    font-size: 0.73rem;
     color: var(--accent2);
   }
 
@@ -281,10 +343,91 @@
     border: 1px solid rgba(255,200,0,0.2);
     border-radius: 6px;
     font-family: var(--mono);
-    font-size: 0.75rem; /* was 0.78rem */
-    color: #ffc800;
+    font-size: 0.75rem;
+    color: var(--warn);
   }
 
+  /* ── Bulk results table ── */
+  .bulk-results {
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .bulk-summary {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem 1.1rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    flex-wrap: wrap;
+  }
+
+  .bulk-summary strong { color: var(--text); }
+
+  .summary-pill {
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+  }
+
+  .summary-pill.vuln { background: rgba(255,60,90,0.2);  color: var(--danger); }
+  .summary-pill.safe { background: rgba(0,255,136,0.15); color: var(--accent); }
+  .summary-pill.unk  { background: rgba(255,200,0,0.15); color: var(--warn); }
+
+  .bulk-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+  }
+
+  .bulk-table th {
+    text-align: left;
+    padding: 0.6rem 1.1rem;
+    color: var(--text-dim);
+    font-weight: 400;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .bulk-table td {
+    padding: 0.65rem 1.1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  .bulk-table tr:last-child td { border-bottom: none; }
+  .bulk-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .bulk-table tr.row-vuln td:first-child { border-left: 2px solid var(--danger); }
+  .bulk-table tr.row-safe td:first-child { border-left: 2px solid var(--accent); }
+  .bulk-table tr.row-unk  td:first-child { border-left: 2px solid var(--warn); }
+  .bulk-table tr.row-pending td:first-child { border-left: 2px solid var(--border); }
+
+  .bulk-table td.subdomain-col { color: var(--accent2); word-break: break-all; }
+  .bulk-table td.service-col   { color: var(--text-dim); }
+  .bulk-table td.details-col   { color: var(--text-dim); font-size: 0.72rem; }
+
+  .inline-spinner {
+    width: 10px; height: 10px;
+    border: 1.5px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
+
+  /* ── Error ── */
   .error-msg {
     padding: 0.85rem 1.1rem;
     background: rgba(255,60,90,0.08);
@@ -295,34 +438,9 @@
     color: var(--danger);
   }
 
-  .trust {
-    text-align: center;
-    font-family: var(--mono);
-    font-size: 0.7rem; /* was 0.75rem */
-    color: var(--text-dim);
-    opacity: 0.8;
-  }
-
-  .trust a {
-    color: var(--accent);
-    text-decoration: none;
-  }
-
-  .trust a:hover {
-    text-decoration: underline;
-  }
-
-  @keyframes fadeDown {
-    from { opacity: 0; transform: translateY(-16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeUp   { from { opacity:0; transform:translateY(12px);  } to { opacity:1; transform:translateY(0); } }
+  @keyframes spin     { to   { transform:rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -335,7 +453,15 @@
   </header>
 
   <div class="card">
-    <div class="input-row">
+
+    <!-- Mode toggle -->
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="btnSingle" onclick="setMode('single')">Single</button>
+      <button class="mode-btn" id="btnBulk" onclick="setMode('bulk')">Bulk</button>
+    </div>
+
+    <!-- Single mode -->
+    <div class="input-row" id="singleWrap">
       <input
         type="text"
         id="subdomainInput"
@@ -343,9 +469,24 @@
         autocomplete="off"
         spellcheck="false"
       />
-      <button id="checkBtn" onclick="runCheck()">Check</button>
+      <button class="primary" id="checkBtn" onclick="runSingle()">Check</button>
     </div>
 
+    <!-- Bulk mode -->
+    <div class="bulk-wrap" id="bulkWrap">
+      <textarea
+        id="bulkInput"
+        placeholder="One subdomain per line&#10;&#10;dev.example.com&#10;staging.example.com&#10;api.example.com"
+        spellcheck="false"
+        autocomplete="off"
+      ></textarea>
+      <div class="bulk-actions">
+        <button class="primary" id="bulkBtn" onclick="runBulk()">Check All</button>
+        <span class="bulk-count" id="bulkCount">0 subdomains</span>
+      </div>
+    </div>
+
+    <!-- Loader -->
     <div class="loader" id="loader">
       <div class="spinner"></div>
       <span id="loaderText">Resolving CNAME chain...</span>
@@ -353,7 +494,7 @@
 
     <div class="trust">
       No data stored • DNS checks only • No logging<br>
-      <a href="https://github.com/mikaww1/SubdomChecker" target="_blank">View source on GitHub</a>
+      <a href="https://github.com/mikaww1/Subdomain-Checker" target="_blank">View source on GitHub</a>
     </div>
   </div>
 
@@ -362,14 +503,46 @@
 </div>
 
 <script>
-  const input   = document.getElementById("subdomainInput");
-  const btn     = document.getElementById("checkBtn");
-  const loader  = document.getElementById("loader");
-  const loaderText = document.getElementById("loaderText");
-  const resultEl = document.getElementById("result");
+  // ── State ──────────────────────────────────────────────────────────────
+  let mode = "single";
 
-  input.addEventListener("keydown", e => { if (e.key === "Enter") runCheck(); });
+  const singleInput = document.getElementById("subdomainInput");
+  const bulkInput   = document.getElementById("bulkInput");
+  const checkBtn    = document.getElementById("checkBtn");
+  const bulkBtn     = document.getElementById("bulkBtn");
+  const loader      = document.getElementById("loader");
+  const loaderText  = document.getElementById("loaderText");
+  const resultEl    = document.getElementById("result");
+  const bulkCount   = document.getElementById("bulkCount");
 
+  // ── Mode toggle ────────────────────────────────────────────────────────
+  function setMode(m) {
+    mode = m;
+    document.getElementById("btnSingle").classList.toggle("active", m === "single");
+    document.getElementById("btnBulk").classList.toggle("active", m === "bulk");
+    document.getElementById("singleWrap").style.display = m === "single" ? "flex" : "none";
+    document.getElementById("bulkWrap").classList.toggle("visible", m === "bulk");
+    resultEl.classList.remove("visible");
+    resultEl.innerHTML = "";
+  }
+
+  // Update subdomain count as user types
+  bulkInput.addEventListener("input", () => {
+    const lines = parseBulkInput();
+    bulkCount.textContent = `${lines.length} subdomain${lines.length !== 1 ? "s" : ""}`;
+  });
+
+  function parseBulkInput() {
+    return bulkInput.value
+      .split("\n")
+      .map(l => l.trim())
+      .filter(l => l.length > 0);
+  }
+
+  // Enter key for single mode
+  singleInput.addEventListener("keydown", e => { if (e.key === "Enter") runSingle(); });
+
+  // ── Loader ────────────────────────────────────────────────────────────
   const loaderMessages = [
     "Resolving CNAME chain...",
     "Checking wildcard DNS...",
@@ -377,21 +550,34 @@
     "Fetching response...",
   ];
 
-  async function runCheck() {
-    const subdomain = input.value.trim();
-    if (!subdomain) { input.focus(); return; }
+  let msgInterval = null;
 
-    btn.disabled = true;
+  function startLoader(msg) {
+    loader.classList.add("visible");
+    loaderText.textContent = msg || loaderMessages[0];
+    if (!msg) {
+      let idx = 0;
+      msgInterval = setInterval(() => {
+        idx = (idx + 1) % loaderMessages.length;
+        loaderText.textContent = loaderMessages[idx];
+      }, 1800);
+    }
+  }
+
+  function stopLoader() {
+    loader.classList.remove("visible");
+    if (msgInterval) { clearInterval(msgInterval); msgInterval = null; }
+  }
+
+  // ── Single check ───────────────────────────────────────────────────────
+  async function runSingle() {
+    const subdomain = singleInput.value.trim();
+    if (!subdomain) { singleInput.focus(); return; }
+
+    checkBtn.disabled = true;
     resultEl.classList.remove("visible");
     resultEl.innerHTML = "";
-    loader.classList.add("visible");
-
-    let msgIdx = 0;
-    loaderText.textContent = loaderMessages[0];
-    const msgInterval = setInterval(() => {
-      msgIdx = (msgIdx + 1) % loaderMessages.length;
-      loaderText.textContent = loaderMessages[msgIdx];
-    }, 1800);
+    startLoader();
 
     try {
       const res  = await fetch("/check", {
@@ -400,60 +586,155 @@
         body: JSON.stringify({ subdomain }),
       });
       const data = await res.json();
-      clearInterval(msgInterval);
-      loader.classList.remove("visible");
-      renderResult(data);
+      stopLoader();
+      renderSingleResult(data);
     } catch (err) {
-      clearInterval(msgInterval);
-      loader.classList.remove("visible");
+      stopLoader();
       renderError("Could not reach the server. Is the API running?");
     } finally {
-      btn.disabled = false;
+      checkBtn.disabled = false;
     }
   }
 
-  function renderResult(d) {
+  // ── Bulk check ─────────────────────────────────────────────────────────
+  async function runBulk() {
+    const subdomains = parseBulkInput();
+    if (!subdomains.length) { bulkInput.focus(); return; }
+
+    bulkBtn.disabled = true;
+    resultEl.classList.remove("visible");
+    resultEl.innerHTML = "";
+
+    // Render table immediately with pending rows, then fill in results live
+    renderBulkTable(subdomains);
+    resultEl.classList.add("visible");
+
+    const results = [];
+    for (let i = 0; i < subdomains.length; i++) {
+      updateBulkRow(i, null); // spinner
+      try {
+        const res  = await fetch("/check", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ subdomain: subdomains[i] }),
+        });
+        const data = await res.json();
+        results.push(data);
+        updateBulkRow(i, data);
+      } catch (err) {
+        const errResult = { subdomain: subdomains[i], error: "Request failed" };
+        results.push(errResult);
+        updateBulkRow(i, errResult);
+      }
+      updateBulkSummary(results, subdomains.length);
+    }
+
+    bulkBtn.disabled = false;
+  }
+
+  // ── Bulk table ─────────────────────────────────────────────────────────
+  function renderBulkTable(subdomains) {
+    resultEl.innerHTML = `
+      <div class="bulk-results">
+        <div class="bulk-summary" id="bulkSummary">
+          <strong>${subdomains.length}</strong> subdomains &nbsp;·&nbsp;
+          <span>checking...</span>
+        </div>
+        <table class="bulk-table">
+          <thead>
+            <tr>
+              <th>Subdomain</th>
+              <th>Status</th>
+              <th>Service</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody id="bulkTbody">
+            ${subdomains.map((s, i) => `
+              <tr class="row-pending" id="bulk-row-${i}">
+                <td class="subdomain-col">${escHtml(s)}</td>
+                <td><span class="badge unk">—</span></td>
+                <td class="service-col">—</td>
+                <td class="details-col">—</td>
+              </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  function updateBulkRow(i, d) {
+    const row = document.getElementById(`bulk-row-${i}`);
+    if (!row) return;
+
+    if (d === null) {
+      row.cells[1].innerHTML = `<span class="inline-spinner"></span>`;
+      return;
+    }
+
+    if (d.error) {
+      row.className = "row-unk";
+      row.cells[1].innerHTML = `<span class="badge unk">ERROR</span>`;
+      row.cells[2].textContent = "—";
+      row.cells[3].textContent = d.error;
+      return;
+    }
+
+    const { cls, badgeCls, badgeText } = statusAttrs(d);
+    row.className = `row-${cls}`;
+    row.cells[1].innerHTML = `<span class="badge ${badgeCls}">${badgeText}</span>`;
+    row.cells[2].textContent = d.service || "—";
+    row.cells[3].textContent = d.reason  || "—";
+  }
+
+  function updateBulkSummary(results, total) {
+    const vuln    = results.filter(r => r.vulnerable).length;
+    const unknown = results.filter(r => !r.vulnerable && r.confidence === "unknown").length;
+    const safe    = results.filter(r => !r.vulnerable && r.confidence !== "unknown" && !r.error).length;
+    const done    = results.length;
+
+    document.getElementById("bulkSummary").innerHTML = `
+      <strong>${total}</strong> subdomains &nbsp;·&nbsp;
+      ${done < total ? `<span>${done}/${total} checked</span> &nbsp;·&nbsp;` : ""}
+      <span class="summary-pill vuln">${vuln} vulnerable</span>
+      <span class="summary-pill unk">${unknown} unknown</span>
+      <span class="summary-pill safe">${safe} safe</span>`;
+  }
+
+  // ── Shared helpers ─────────────────────────────────────────────────────
+  function statusAttrs(d) {
+    if (d.vulnerable)               return { cls: "vuln", badgeCls: "vuln", badgeText: "VULNERABLE" };
+    if (d.confidence === "unknown") return { cls: "unk",  badgeCls: "unk",  badgeText: "UNKNOWN" };
+    if (d.confidence === "n/a")     return { cls: "safe", badgeCls: "safe", badgeText: "N/A" };
+    return                                 { cls: "safe", badgeCls: "safe", badgeText: "SAFE" };
+  }
+
+  // ── Single result render ───────────────────────────────────────────────
+  function renderSingleResult(d) {
     if (d.error) { renderError(d.error); return; }
 
-    const isVuln = d.vulnerable;
-    const conf   = d.confidence;
-
-    let headerClass, badgeClass, badgeText, headerIcon, headerLabel;
-
-    if (isVuln) {
-      headerClass = "vulnerable"; badgeClass = "vuln";
-      badgeText = "VULNERABLE"; headerIcon = "⚠";
-      headerLabel = "Subdomain takeover possible";
-    } else if (conf === "unknown") {
-      headerClass = "unknown"; badgeClass = "unk";
-      badgeText = "UNKNOWN"; headerIcon = "?";
-      headerLabel = "Manual review recommended";
-    } else if (conf === "n/a") {
-      headerClass = "safe"; badgeClass = "safe";
-      badgeText = "N/A"; headerIcon = "–";
-      headerLabel = "No external service found";
-    } else {
-      headerClass = "safe"; badgeClass = "safe";
-      badgeText = "SAFE"; headerIcon = "✓";
-      headerLabel = "No takeover detected";
-    }
+    const { cls, badgeCls, badgeText } = statusAttrs(d);
+    const iconMap  = { vuln: "⚠", safe: "✓", unk: "?" };
+    const labelMap = {
+      vuln: "Subdomain takeover possible",
+      safe: d.confidence === "n/a" ? "No external service found" : "No takeover detected",
+      unk:  "Manual review recommended",
+    };
+    const headerClass = { vuln: "vulnerable", safe: "safe", unk: "unknown" };
 
     let rows = "";
     rows += row("Subdomain", d.subdomain);
-    rows += row("Details", d.reason);
-    if (d.service)
-      rows += row("Service", d.service);
+    rows += row("Details",   d.reason);
+    if (d.service) rows += row("Service", d.service);
 
     if (d.cname_chain && d.cname_chain.length) {
       const chain = [d.subdomain, ...d.cname_chain]
         .map((c, i, arr) =>
-          `<span class="cname-item">${c}</span>${i < arr.length - 1 ? '<span class="arrow">→</span>' : ''}`
-        ).join(" ");
+          `<span class="cname-item">${escHtml(c)}</span>${i < arr.length - 1 ? '<span class="arrow">→</span>' : ''}`)
+        .join(" ");
       rows += `<div class="row"><span class="row-label">CNAME chain</span><span class="row-value"><div class="cname-chain">${chain}</div></span></div>`;
     }
 
-    if (d.http_status)
-      rows += row("HTTP status", d.http_status);
+    if (d.http_status) rows += row("HTTP status", d.http_status);
 
     const wildcard = d.wildcard_detected
       ? `<div class="wildcard-warn">⚠ Wildcard DNS detected on parent domain — results may be unreliable</div>`
@@ -461,27 +742,32 @@
 
     resultEl.innerHTML = `
       <div class="result-card">
-        <div class="result-header ${headerClass}">
-          <span>${headerIcon}</span>
-          <span>${headerLabel}</span>
-          <span class="badge ${badgeClass}">${badgeText}</span>
+        <div class="result-header ${headerClass[cls]}">
+          <span>${iconMap[cls]}</span>
+          <span>${labelMap[cls]}</span>
+          <span class="badge ${badgeCls}">${badgeText}</span>
         </div>
-        <div class="result-body">
-          ${rows}
-          ${wildcard}
-        </div>
+        <div class="result-body">${rows}${wildcard}</div>
       </div>`;
 
     resultEl.classList.add("visible");
   }
 
   function row(label, value) {
-    return `<div class="row"><span class="row-label">${label}</span><span class="row-value">${value}</span></div>`;
+    return `<div class="row"><span class="row-label">${escHtml(label)}</span><span class="row-value">${escHtml(String(value))}</span></div>`;
   }
 
   function renderError(msg) {
-    resultEl.innerHTML = `<div class="error-msg">✗ ${msg}</div>`;
+    resultEl.innerHTML = `<div class="error-msg">✗ ${escHtml(msg)}</div>`;
     resultEl.classList.add("visible");
+  }
+
+  function escHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
   }
 </script>
 </body>
