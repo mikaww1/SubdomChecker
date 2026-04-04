@@ -25,67 +25,244 @@ HEADERS = {
 }
 
 FINGERPRINTS = {
-    # Cloud / hosting
-    "github.io":              "There isn't a GitHub Pages site here",
-    "herokuapp.com":          "No such app",
-    "amazonaws.com":          "NoSuchBucket",
-    "s3.amazonaws.com":       "NoSuchBucket",
-    "fastly.net":             "Fastly error: unknown domain",
-    "pantheonsite.io":        "The gods are wise",
-    "ghost.io":               "Domain not configured",
-    "surge.sh":               "project not found",
-    "bitbucket.io":           "Repository not found",
-    "netlify.app":            "Not Found - Request ID",
-    "fly.dev":                "404 Not Found",
-    "vercel.app":             "The deployment could not be found",
-    "pages.dev":              "not found",
-    "azurewebsites.net":      "404 Web Site not found",
-    "cloudapp.azure.com":     "404 Web Site not found",
-    "trafficmanager.net":     "404 Web Site not found",
-    "blob.core.windows.net":  "BlobServiceProperties",
-    "cloudapp.net":           "404 Not Found",
-    "elasticbeanstalk.com":   "404 Not Found",
-    "cloudfront.net":         "ERROR: The request could not be satisfied",
 
-    # SaaS / support
-    "helpscoutdocs.com":      "No settings were found",
-    "zendesk.com":            "Help Center Closed",
-    "freshdesk.com":          "There is no such account",
-    "helpjuice.com":          "We could not find what you're looking for",
-    "uservoice.com":          "This UserVoice subdomain is currently available",
-    "desk.com":               "Please try again or try Desk.com free for 14 days",
-    "intercom.help":          "Uh oh. That page doesn't exist.",
-    "statuspage.io":          "You are being redirected",
-    "aftership.com":          "Oops.",
-    "readme.io":              "Project doesnt exist... yet!",
+    # ── GitHub ──────────────────────────────────────────────────────────
+    "github.io":                    "There isn't a GitHub Pages site here",
 
-    # E-commerce
-    "shopify.com":            "Sorry, this shop is currently unavailable",
-    "myshopify.com":          "Sorry, this shop is currently unavailable",
-    "bigcartel.com":          "Oops! You've stumbled upon a shop that is no longer around",
+    # ── Heroku ──────────────────────────────────────────────────────────
+    "herokuapp.com":                "No such app",
+    "herokussl.com":                "No such app",
+    "herokudns.com":                "No such app",
 
-    # Marketing / CMS
-    "hubspot.net":            "This page isn't available",
-    "hubspotpagebuilder.com": "This page isn't available",
-    "wpengine.com":           "The site you were looking for couldn't be found",
-    "kinsta.cloud":           "No Site For This Domain",
-    "webflow.io":             "The page you are looking for doesn't exist",
-    "instapage.com":          "Looks Like You're Lost",
-    "unbounce.com":           "The requested URL was not found on this server",
-    "strikingly.com":         "page not found",
-    "cargo.site":             "If you're the site owner",
-    "cargocollective.com":    "If you're the site owner",
-    "squarespace.com":        "No Such Account",
-    "format.com":             "Sorry, this page is no longer available",
-    "tilda.ws":               "Domain is not connected",
-    "mailchimpsites.com":     "There is no site here",
-    "campaignmonitor.com":    "Double-check the URL",
+    # ── AWS ─────────────────────────────────────────────────────────────
+    "amazonaws.com":                "NoSuchBucket",
+    "s3.amazonaws.com":             "NoSuchBucket",
+    "s3-website":                   "NoSuchBucket",           # covers all s3-website-*.amazonaws.com
+    "elasticbeanstalk.com":         "404 Not Found",
+    "cloudfront.net":               "ERROR: The request could not be satisfied",
 
-    # Community / docs
-    "tumblr.com":             "Whatever you were looking for doesn't currently exist",
-    "launchrock.com":         "It looks like you may have taken a wrong turn",
-    "pingdom.com":            "Sorry, couldn't find the status page",
-    "agilecrm.com":           "Sorry, this page is no longer available",
+    # ── Azure ────────────────────────────────────────────────────────────
+    "azurewebsites.net":            "404 Web Site not found",
+    "azurefd.net":                  "404 Not Found",          # Azure Front Door
+    "azure-api.net":                "BadGateway",             # Azure API Management
+    "cloudapp.azure.com":           "404 Web Site not found",
+    "cloudapp.net":                 "404 Not Found",
+    "trafficmanager.net":           "404 Web Site not found",
+    "blob.core.windows.net":        "BlobServiceProperties",
+    "servicebus.windows.net":       "404 Not Found",
+    "azureedge.net":                "404 Not Found",          # Azure CDN
+
+    # ── Google Cloud ─────────────────────────────────────────────────────
+    "storage.googleapis.com":       "NoSuchBucket",
+    "c.storage.googleapis.com":     "NoSuchBucket",
+    "appspot.com":                  "404 Not Found",
+    "googleusercontent.com":        "404 Not Found",
+
+    # ── Fastly ───────────────────────────────────────────────────────────
+    "fastly.net":                   "Fastly error: unknown domain",
+
+    # ── Vercel ───────────────────────────────────────────────────────────
+    "vercel.app":                   "The deployment could not be found",
+    "vercel.sh":                    "The deployment could not be found",
+    "now.sh":                       "The deployment could not be found",
+
+    # ── Netlify ──────────────────────────────────────────────────────────
+    "netlify.app":                  "Not Found - Request ID",
+    "netlify.com":                  "Not Found - Request ID",
+
+    # ── Cloudflare Pages ─────────────────────────────────────────────────
+    "pages.dev":                    "not found",
+
+    # ── Render ───────────────────────────────────────────────────────────
+    "onrender.com":                 "not found",
+
+    # ── Railway ──────────────────────────────────────────────────────────
+    "railway.app":                  "Application not found",
+    "up.railway.app":               "Application not found",
+
+    # ── Fly.io ───────────────────────────────────────────────────────────
+    "fly.dev":                      "404 Not Found",
+    "fly.io":                       "404 Not Found",
+    "flycast":                      "404 Not Found",
+
+    # ── Surge ────────────────────────────────────────────────────────────
+    "surge.sh":                     "project not found",
+
+    # ── Bitbucket ────────────────────────────────────────────────────────
+    "bitbucket.io":                 "Repository not found",
+
+    # ── Pantheon ─────────────────────────────────────────────────────────
+    "pantheonsite.io":              "The gods are wise",
+    "getpantheon.com":              "The gods are wise",
+
+    # ── WP Engine ────────────────────────────────────────────────────────
+    "wpengine.com":                 "The site you were looking for couldn't be found",
+
+    # ── Kinsta ───────────────────────────────────────────────────────────
+    "kinsta.cloud":                 "No Site For This Domain",
+    "kinsta.com":                   "No Site For This Domain",
+
+    # ── Webflow ──────────────────────────────────────────────────────────
+    "webflow.io":                   "The page you are looking for doesn't exist",
+
+    # ── Ghost ────────────────────────────────────────────────────────────
+    "ghost.io":                     "Domain not configured",
+    "ghost.org":                    "Domain not configured",
+
+    # ── Squarespace ──────────────────────────────────────────────────────
+    "squarespace.com":              "No Such Account",
+    "sqsp.net":                     "No Such Account",
+
+    # ── Wix ──────────────────────────────────────────────────────────────
+    "wix.com":                      "Error ConnectYourDomain",
+    "wixsite.com":                  "Error ConnectYourDomain",
+
+    # ── Cargo / CargoCollective ───────────────────────────────────────────
+    "cargo.site":                   "If you're the site owner",
+    "cargocollective.com":          "If you're the site owner",
+
+    # ── Shopify ──────────────────────────────────────────────────────────
+    "shopify.com":                  "Sorry, this shop is currently unavailable",
+    "myshopify.com":                "Sorry, this shop is currently unavailable",
+
+    # ── BigCartel ────────────────────────────────────────────────────────
+    "bigcartel.com":                "Oops! You've stumbled upon a shop that is no longer around",
+
+    # ── HubSpot ──────────────────────────────────────────────────────────
+    "hubspot.net":                  "This page isn't available",
+    "hubspotpagebuilder.com":       "This page isn't available",
+    "hs-sites.com":                 "This page isn't available",
+
+    # ── Instapage ────────────────────────────────────────────────────────
+    "instapage.com":                "Looks Like You're Lost",
+    "pageserve.co":                 "Looks Like You're Lost",
+
+    # ── Unbounce ─────────────────────────────────────────────────────────
+    "unbounce.com":                 "The requested URL was not found on this server",
+    "ubembed.com":                  "The requested URL was not found on this server",
+
+    # ── Strikingly ───────────────────────────────────────────────────────
+    "strikingly.com":               "page not found",
+
+    # ── Tilda ────────────────────────────────────────────────────────────
+    "tilda.ws":                     "Domain is not connected",
+    "tildacdn.com":                 "Domain is not connected",
+
+    # ── Mailchimp ────────────────────────────────────────────────────────
+    "mailchimpsites.com":           "There is no site here",
+    "mcsv.net":                     "There is no site here",
+
+    # ── Campaign Monitor ─────────────────────────────────────────────────
+    "campaignmonitor.com":          "Double-check the URL",
+
+    # ── Zendesk ──────────────────────────────────────────────────────────
+    "zendesk.com":                  "Help Center Closed",
+    "zendeskgarden.com":            "Help Center Closed",
+
+    # ── Freshdesk ────────────────────────────────────────────────────────
+    "freshdesk.com":                "There is no such account",
+    "freshservice.com":             "There is no such account",
+
+    # ── Help Scout ───────────────────────────────────────────────────────
+    "helpscoutdocs.com":            "No settings were found",
+    "helpscout.net":                "No settings were found",
+
+    # ── HelpJuice ────────────────────────────────────────────────────────
+    "helpjuice.com":                "We could not find what you're looking for",
+
+    # ── UserVoice ────────────────────────────────────────────────────────
+    "uservoice.com":                "This UserVoice subdomain is currently available",
+
+    # ── Intercom ─────────────────────────────────────────────────────────
+    "intercom.help":                "Uh oh. That page doesn't exist.",
+    "custom.intercom.help":         "Uh oh. That page doesn't exist.",
+
+    # ── Statuspage / Atlassian ───────────────────────────────────────────
+    "statuspage.io":                "You are being redirected",
+    "atlassian.net":                "Page not found",
+
+    # ── Readme.io ────────────────────────────────────────────────────────
+    "readme.io":                    "Project doesnt exist... yet!",
+    "readme.com":                   "Project doesnt exist... yet!",
+
+    # ── AfterShip ────────────────────────────────────────────────────────
+    "aftership.com":                "Oops.",
+
+    # ── Pingdom ──────────────────────────────────────────────────────────
+    "pingdom.com":                  "Sorry, couldn't find the status page",
+
+    # ── Tumblr ───────────────────────────────────────────────────────────
+    "tumblr.com":                   "Whatever you were looking for doesn't currently exist",
+
+    # ── LaunchRock ───────────────────────────────────────────────────────
+    "launchrock.com":               "It looks like you may have taken a wrong turn",
+
+    # ── Desk.com ─────────────────────────────────────────────────────────
+    "desk.com":                     "Please try again or try Desk.com free for 14 days",
+
+    # ── Format ───────────────────────────────────────────────────────────
+    "format.com":                   "Sorry, this page is no longer available",
+
+    # ── Agile CRM ────────────────────────────────────────────────────────
+    "agilecrm.com":                 "Sorry, this page is no longer available",
+
+    # ── Supabase ─────────────────────────────────────────────────────────
+    "supabase.co":                  "Project not found",
+    "supabase.in":                  "Project not found",
+
+    # ── Bubble ───────────────────────────────────────────────────────────
+    "bubbleapps.io":                "404 Not Found",
+    "bubble.io":                    "404 Not Found",
+
+    # ── Glitch ───────────────────────────────────────────────────────────
+    "glitch.me":                    "No such app",
+
+    # ── Gitbook ──────────────────────────────────────────────────────────
+    "gitbook.io":                   "If you need help",
+    "gitbook.com":                  "If you need help",
+
+    # ── Notion ───────────────────────────────────────────────────────────
+    "notion.site":                  "page not found",
+
+    # ── Leadpages ────────────────────────────────────────────────────────
+    "leadpages.net":                "Your 404 page here",
+    "lpages.co":                    "Your 404 page here",
+    "lp.co":                        "Your 404 page here",
+
+    # ── Kajabi ───────────────────────────────────────────────────────────
+    "kajabi.com":                   "This page is no longer available",
+    "kajabipages.com":              "This page is no longer available",
+
+    # ── Podia ────────────────────────────────────────────────────────────
+    "podia.com":                    "404 — We can't find that page",
+
+    # ── Teachable ────────────────────────────────────────────────────────
+    "teachable.com":                "This course is no longer available",
+    "teachablecdn.com":             "This course is no longer available",
+
+    # ── Thinkific ────────────────────────────────────────────────────────
+    "thinkific.com":                "Something went wrong",
+
+    # ── Acquia ───────────────────────────────────────────────────────────
+    "acquia-sites.com":             "If you are an Acquia Cloud customer",
+    "acquia.com":                   "If you are an Acquia Cloud customer",
+
+    # ── Smugmug ──────────────────────────────────────────────────────────
+    "smugmug.com":                  "Page Not Found",
+
+    # ── Fly CDN / BunnyCDN ───────────────────────────────────────────────
+    "b-cdn.net":                    "No such app",             # BunnyCDN pull zone gone
+    "bunnycdn.com":                 "No such app",
+
+    # ── Fastmail ─────────────────────────────────────────────────────────
+    "fastmail.com":                 "This domain is not hosted here",
+    "fastmail.fm":                  "This domain is not hosted here",
+
+    # ── SendGrid ─────────────────────────────────────────────────────────
+    "sendgrid.net":                 "The page you are looking for does not exist",
+
+    # ── Mailgun ──────────────────────────────────────────────────────────
+    "mailgun.org":                  "The page you are looking for does not exist",
 }
 
 
