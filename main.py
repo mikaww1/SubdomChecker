@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-subtake — Subdomain Takeover Checker
+SubdomainChecker — Subdomain Takeover Checker
 Usage:
-    python subtake.py <subdomain>
-    python subtake.py shop.example.com
-    python subtake.py --help
+    python main.py <subdomain>
+    python main.py shop.example.com
+    python main.py --help
 """
 
 from __future__ import annotations
@@ -537,12 +537,12 @@ def print_result(r: dict):
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="subtake",
+        prog="main",
         description="Check whether a subdomain is vulnerable to takeover.",
         epilog="Examples:\n"
-               "  python subtake.py shop.example.com\n"
-               "  python subtake.py https://blog.example.com\n"
-               "  python subtake.py dev.example.com --no-wildcard-check\n",
+               "  python main.py shop.example.com\n"
+               "  python main.py https://blog.example.com\n"
+               "  python main.py dev.example.com --no-wildcard-check\n",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
