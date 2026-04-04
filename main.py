@@ -250,8 +250,8 @@ FINGERPRINTS = {
     # ── Smugmug ──────────────────────────────────────────────────────────
     "smugmug.com":                  "Page Not Found",
 
-    # ── Fly CDN / BunnyCDN ───────────────────────────────────────────────
-    "b-cdn.net":                    "No such app",             # BunnyCDN pull zone gone
+    # ── BunnyCDN ─────────────────────────────────────────────────────────
+    "b-cdn.net":                    "No such app",
     "bunnycdn.com":                 "No such app",
 
     # ── Fastmail ─────────────────────────────────────────────────────────
@@ -274,8 +274,8 @@ def normalize(domain: str) -> str:
     """Strip protocol, path, port, and trailing dots. Preserves all subdomains."""
     domain = domain.lower().strip()
     domain = domain.replace("http://", "").replace("https://", "")
-    domain = domain.split("/")[0]   # drop path
-    domain = domain.split(":")[0]   # drop port
+    domain = domain.split("/")[0]
+    domain = domain.split(":")[0]
     domain = domain.rstrip(".")
     return domain
 
@@ -284,7 +284,6 @@ def get_registrable_domain(subdomain: str) -> str:
     """
     Returns a best-effort registrable domain (last two labels).
     e.g. shop.example.com → example.com
-    Note: naively assumes 2-label TLDs; good enough for CTF/personal use.
     """
     parts = subdomain.split(".")
     return ".".join(parts[-2:]) if len(parts) >= 2 else subdomain
@@ -294,10 +293,11 @@ def get_registrable_domain(subdomain: str) -> str:
 #  DNS
 # ──────────────────────────────────────────────
 
-def resolve_cname_chain(subdomain: str) -> list[str]:
+def resolve_cname_chain(subdomain: str) -> tuple[list[str], bool]:
     """
-    Follows the full CNAME chain and returns all targets in order.
-    Returns an empty list if there is no CNAME.
+    Follows the full CNAME chain and returns (chain, ended_in_nxdomain).
+    ended_in_nxdomain=True means the final target doesn't exist in DNS —
+    a strong signal of a dangling CNAME regardless of service fingerprint.
     """
     chain: list[str] = []
     current = subdomain
@@ -306,7 +306,7 @@ def resolve_cname_chain(subdomain: str) -> list[str]:
     while True:
         if current in visited:
             _warn("Circular CNAME chain detected — stopping.")
-            break
+            return chain, False
         visited.add(current)
 
         try:
@@ -316,15 +316,14 @@ def resolve_cname_chain(subdomain: str) -> list[str]:
             current = target
 
         except dns.resolver.NoAnswer:
-            break  # legitimate end of chain
+            return chain, False
+
         except dns.resolver.NXDOMAIN:
-            _info(f"'{current}' → NXDOMAIN — possibly dangling CNAME.")
-            break
+            return chain, True
+
         except Exception as e:
             _warn(f"DNS error resolving '{current}': {e}")
-            break
-
-    return chain
+            return chain, False
 
 
 def has_a_record(domain: str) -> bool:
@@ -410,15 +409,15 @@ def make_result(
       "n/a"       — no CNAME or A record to evaluate
     """
     return {
-        "subdomain":        subdomain,
-        "cname_chain":      cname_chain,
-        "vulnerable":       vulnerable,
-        "confidence":       confidence,
-        "reason":           reason,
-        "service":          service,
-        "matched_cname":    matched_cname,
-        "fingerprint":      fingerprint,
-        "http_status":      http_status,
+        "subdomain":         subdomain,
+        "cname_chain":       cname_chain,
+        "vulnerable":        vulnerable,
+        "confidence":        confidence,
+        "reason":            reason,
+        "service":           service,
+        "matched_cname":     matched_cname,
+        "fingerprint":       fingerprint,
+        "http_status":       http_status,
         "wildcard_detected": wildcard,
     }
 
@@ -427,14 +426,13 @@ def make_result(
 #  Core check
 # ──────────────────────────────────────────────
 
-def check_subdomain(subdomain: str) -> dict:
-    # Always normalize input here so callers don't have to
+def check_subdomain(subdomain: str, skip_wildcard: bool = False) -> dict:
     subdomain = normalize(subdomain)
     _info(f"Checking: {subdomain}")
 
-    wildcard = is_wildcard_domain(subdomain)
+    wildcard = False if skip_wildcard else is_wildcard_domain(subdomain)
 
-    cname_chain = resolve_cname_chain(subdomain)
+    cname_chain, ended_in_nxdomain = resolve_cname_chain(subdomain)
 
     if not cname_chain:
         if has_a_record(subdomain):
@@ -447,6 +445,23 @@ def check_subdomain(subdomain: str) -> dict:
     chain_display = " → ".join([subdomain] + cname_chain)
     _info(f"CNAME chain: {chain_display}")
 
+    # ── NXDOMAIN check (dangling CNAME) ──────────────────────────────────
+    if ended_in_nxdomain and not wildcard:
+        last = cname_chain[-1]
+        reason = f"Dangling CNAME — '{last}' does not exist in DNS (NXDOMAIN)"
+        _info(f"VULNERABLE — {reason}")
+        service, _, _ = match_service(cname_chain)
+        return make_result(
+            subdomain=subdomain,
+            cname_chain=cname_chain,
+            vulnerable=True,
+            confidence="confirmed",
+            reason=reason,
+            service=service,
+            wildcard=wildcard,
+        )
+
+    # ── Service fingerprint + HTTP check ─────────────────────────────────
     service, fingerprint, matched_cname = match_service(cname_chain)
 
     if not service:
@@ -491,8 +506,8 @@ CONFIDENCE_LABEL = {
     "n/a":       "N/A",
 }
 
-def _info(msg: str):  print(f"[*] {msg}")
-def _warn(msg: str):  print(f"[!] {msg}", file=sys.stderr)
+def _info(msg: str): print(f"[*] {msg}")
+def _warn(msg: str): print(f"[!] {msg}", file=sys.stderr)
 
 
 def print_result(r: dict):
@@ -526,7 +541,8 @@ def build_parser() -> argparse.ArgumentParser:
         description="Check whether a subdomain is vulnerable to takeover.",
         epilog="Examples:\n"
                "  python subtake.py shop.example.com\n"
-               "  python subtake.py https://blog.example.com\n",
+               "  python subtake.py https://blog.example.com\n"
+               "  python subtake.py dev.example.com --no-wildcard-check\n",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
@@ -543,7 +559,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--no-wildcard-check",
         action="store_true",
-        help="Skip wildcard DNS detection (faster, less safe)",
+        help="Skip wildcard DNS detection (faster, but may produce false positives)",
     )
     return parser
 
@@ -552,7 +568,6 @@ def main():
     parser = build_parser()
     args = parser.parse_args()
 
-    # Allow timeout override
     global TIMEOUT
     TIMEOUT = args.timeout
 
@@ -560,10 +575,9 @@ def main():
     if not subdomain:
         parser.error("No subdomain provided.")
 
-    result = check_subdomain(subdomain)
+    result = check_subdomain(subdomain, skip_wildcard=args.no_wildcard_check)
     print_result(result)
 
-    # Exit 1 if vulnerable — useful for scripting
     sys.exit(1 if result["vulnerable"] else 0)
 
 
